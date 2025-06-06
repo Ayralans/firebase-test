@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Test - Federación Imperios Perdidos</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 500px; margin: 50px auto; padding: 20px; }
+        input, button { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 4px; }
+        button { background-color: #4CAF50; color: white; border: none; cursor: pointer; }
+        .resultado { margin: 20px 0; padding: 15px; border-radius: 4px; }
+        .exito { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    </style>
+</head>
+<body>
+    <h1>🔥 Firebase Test - Federación Imperios Perdidos</h1>
+    
+    <h2>Registro de Usuario</h2>
+    <form id="formRegistro">
+        <input type="email" id="email" placeholder="Email" value="test@gmail.com" required>
+        <input type="password" id="password" placeholder="Contraseña (min 6 chars)" value="123456" required>
+        <button type="submit">🚀 REGISTRAR USUARIO</button>
+    </form>
+    
+    <div id="resultado"></div>
+    
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, createUserWithEmailAndPassword, sendEmailVerification } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBaCIuCnUP5WvDnqGL_pHzGA-yCMlrOSVU",
+            authDomain: "federacion-imperios-perdidos.firebaseapp.com",
+            projectId: "federacion-imperios-perdidos",
+            storageBucket: "federacion-imperios-perdidos.firebasestorage.app",
+            messagingSenderId: "698512348285",
+            appId: "1:698512348285:web:7b1ec38d0f536807988d14",
+            measurementId: "G-3Z2CR70Y8S"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        function mostrarResultado(mensaje, tipo) {
+            document.getElementById('resultado').innerHTML = `<div class="resultado ${tipo}">${mensaje}</div>`;
+        }
+
+        document.getElementById('formRegistro').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            console.log('🚀 INICIANDO REGISTRO:', email);
+            mostrarResultado('⏳ Registrando usuario...', 'info');
+            
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                
+                console.log('✅ USUARIO CREADO EXITOSAMENTE!');
+                console.log('📧 UID:', user.uid);
+                console.log('📧 Email:', user.email);
+                
+                await sendEmailVerification(user);
+                console.log('📧 Email de verificación enviado');
+                
+                mostrarResultado(`
+                    <strong>✅ ¡ÉXITO!</strong><br>
+                    👤 Usuario registrado: ${email}<br>
+                    🆔 UID: ${user.uid}<br>
+                    📧 Email de verificación enviado<br><br>
+                    <strong>🔍 VE A FIREBASE CONSOLE → Authentication → Users</strong>
+                `, 'exito');
+                
+            } catch (error) {
+                console.error('❌ ERROR:', error.code, error.message);
+                
+                let mensaje = '';
+                switch (error.code) {
+                    case 'auth/email-already-in-use':
+                        mensaje = '⚠️ Email ya registrado - ¡YA funciona!';
+                        break;
+                    case 'auth/weak-password':
+                        mensaje = '⚠️ Contraseña muy débil (min 6 caracteres)';
+                        break;
+                    default:
+                        mensaje = `❌ Error: ${error.message}`;
+                }
+                
+                mostrarResultado(mensaje, 'error');
+            }
+        });
+    </script>
+</body>
+</html>
